@@ -20,9 +20,15 @@
 
 ---
 
-## Project Overview
+Repository intelligence and context optimization toolkit for Claude Code workflows.
 
-TokenMaxxing is a lightweight repository intelligence and context optimization toolkit built in Rust. It is designed to reduce unnecessary token consumption and optimize prompt structures before injection into LLMs (such as Claude Code) through codebase analysis, duplicate detection, and semantic context compression.
+TokenMaxxing helps developers reduce unnecessary token consumption through repository analysis, duplicate detection, context compression, prompt optimization, and context prioritization.
+
+---
+
+## Overview
+
+**TokenMaxxing** is a high-performance **Rust CLI** and **developer tools** suite designed for codebase profiling, serving as a smart **Claude tokenizer** assistant and complete **repository intelligence** utility. Specially engineered for **Claude Code** workflows, it guarantees maximum **token efficiency**, precise **token optimization**, and rigorous **context optimization** by delivering automated **repository analysis**, telegraphic **prompt optimization**, and advanced **context compression** (such as whitespace minification and semantic deduplication).
 
 > [!NOTE]
 > This project is currently in **Public Beta**. While fully functional and verified, APIs and options may evolve based on real-world usage.
