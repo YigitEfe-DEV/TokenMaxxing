@@ -1,25 +1,26 @@
 # TokenMaxxing
 
 <div align="center">
-  <h3>A production-grade, open-source platform maximizing Claude Code efficiency.</h3>
+  <h3>A production-grade, open-source context optimization platform maximizing Claude Code efficiency.</h3>
 </div>
 
 ## Vision
-TokenMaxxing reduces unnecessary token consumption while preserving output quality. It moves past naive token counting and introduces context compression, instruction deduplication, AST-aware repository scanning, and semantic pruning to maximize useful context per token.
+TokenMaxxing reduces unnecessary token consumption while preserving output quality. It moves past naive token counting and introduces context quality scoring, smart repository waste detection, prompt rewriting, and automated performance pipelines to maximize useful context per token.
 
-## Features
-- **Token Engine**: Fast, Accurate, and Hybrid modes. Batch processing and streaming tokenizer.
-- **Prompt Optimizer**: Minifies Markdown, JSON, XML, YAML. Deduplicates instructions.
-- **Context Compressor**: Semantic chunking and recursive summarization for massive contexts (40-70% token reduction).
-- **Repository Intelligence**: Analyzes codebases to flag repetitive templates, bloated docs, and duplicated code.
-- **Claude Code Accelerator**: First-class CLI (`tokenmaxxing`) to execute optimizations instantly.
-- **Agent Optimization Layer**: Analyzes and streamlines AI agent workflows.
+## V2 Platform Architecture
+TokenMaxxing is built as a highly performant Rust engine:
+- `tokenmaxxing-core`: The modular context ranking and optimization engine.
+- `tokenmaxxing-cli`: Interactive CLI.
+- Multi-language bindings for Python and TypeScript ecosystems.
 
-## Benchmarks
-*Currently in development. Target:*
-* 20-60% token reduction on average repositories.
-* 2x faster analysis than naive implementations.
-* Native support for 100k+ files.
+## V2 Feature Suite
+- **Token Engine**: Fast, Accurate, and Hybrid counting modes with parallel rayon traversal.
+- **Context Maxxing**: Context ranking, noise ratio evaluations, quality scoring, and redundancy detection.
+- **Smart Repository Mode**: Flags generated lockfiles, build target dirs, caches, and duplicate files.
+- **Context Simulator**: Simulates workspace sizes against context windows (e.g. Claude 200k), evaluating overflow risks.
+- **Rewrite Engine**: Condenses prompts using politeness filters and mode-specific settings (Conservative, Balanced, Aggressive).
+- **Repository Memory**: Generates architecture and dependency summaries to avoid expensive rescans.
+- **Performance Dashboard**: Renders insights into Markdown, static HTML, or JSON.
 
 ## Installation
 
@@ -28,43 +29,46 @@ TokenMaxxing reduces unnecessary token consumption while preserving output quali
 cargo install tokenmaxxing-cli
 ```
 
-### Python Bindings
+## CLI Usage
+
+### Backward Compatible Core Commands:
 ```bash
-pip install tokenmaxxing
-```
+# Count tokens in a file or directory
+tokenmaxxing count .
 
-### TypeScript Bindings
-```bash
-npm install tokenmaxxing
-```
-
-## Usage Examples
-
-```bash
-# Get stats for current repository
-tokenmaxxing stats .
-
-# Optimize a specific prompt
+# Minify prompt files (Markdown, JSON, XML)
 tokenmaxxing optimize prompt.md
 
-# Compress a repository context
+# Compress semantic chunks
 tokenmaxxing compress .
 ```
 
-## Architecture
+### V2 Platform Commands:
+```bash
+# Smart repository waste analysis
+tokenmaxxing waste .
 
-TokenMaxxing is built on a modular architecture powered by a Rust core.
+# Evaluate context scores and noise ratios
+tokenmaxxing context prompt.md
 
-- `tokenmaxxing-core`: The high-performance engine for parsing and processing.
-- `tokenmaxxing-cli`: Command-line interface.
-- Bindings expose the engine to Python/TypeScript ecosystems.
+# Rank semantic chunks by priority
+tokenmaxxing rank prompt.md
 
-*(See [ARCHITECTURE.md](ARCHITECTURE.md) for full details)*
+# Simulate context utilization and overflow risk
+tokenmaxxing simulate .
 
-## Contributing
+# Rewrite prompts into telegraphic statements
+tokenmaxxing rewrite prompt.md --aggressive
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+# Run the automated performance pipeline
+tokenmaxxing auto .
+
+# View structural memory
+tokenmaxxing memory .
+
+# Render Markdown, HTML, or JSON dashboards
+tokenmaxxing dashboard . --html
+```
 
 ## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License.

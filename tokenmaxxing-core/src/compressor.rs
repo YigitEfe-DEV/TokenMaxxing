@@ -2,6 +2,12 @@ use std::collections::HashSet;
 
 pub struct ContextCompressor;
 
+impl Default for ContextCompressor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ContextCompressor {
     pub fn new() -> Self {
         Self
@@ -10,7 +16,9 @@ impl ContextCompressor {
     /// Split text into semantic chunks (e.g., paragraphs or code blocks)
     pub fn semantic_chunking(text: &str) -> Vec<&str> {
         // Very basic chunking by double newlines (paragraphs)
-        text.split("\n\n").filter(|s| !s.trim().is_empty()).collect()
+        text.split("\n\n")
+            .filter(|s| !s.trim().is_empty())
+            .collect()
     }
 
     /// Detect and remove duplicate chunks
@@ -34,13 +42,20 @@ impl ContextCompressor {
 
     /// Simple heuristic to remove dead context
     /// (e.g. chunks that look like generated licenses or generic boilerplate)
-    pub fn remove_dead_context<'a>(chunks: Vec<&'a str>) -> Vec<&'a str> {
-        let boilerplate_keywords = ["permission is hereby granted", "mit license", "apache license"];
-        
-        chunks.into_iter().filter(|chunk| {
-            let lower = chunk.to_lowercase();
-            !boilerplate_keywords.iter().any(|&kw| lower.contains(kw))
-        }).collect()
+    pub fn remove_dead_context(chunks: Vec<&str>) -> Vec<&str> {
+        let boilerplate_keywords = [
+            "permission is hereby granted",
+            "mit license",
+            "apache license",
+        ];
+
+        chunks
+            .into_iter()
+            .filter(|chunk| {
+                let lower = chunk.to_lowercase();
+                !boilerplate_keywords.iter().any(|&kw| lower.contains(kw))
+            })
+            .collect()
     }
 
     /// Compress text by combining chunks after cleaning
@@ -48,7 +63,7 @@ impl ContextCompressor {
         let chunks = Self::semantic_chunking(text);
         let unique = Self::remove_duplicate_chunks(chunks);
         let alive = Self::remove_dead_context(unique);
-        
+
         alive.join("\n\n")
     }
 }

@@ -10,6 +10,12 @@ pub struct OptimizationReport {
     pub reduction_percentage: f64,
 }
 
+impl Default for PromptOptimizer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PromptOptimizer {
     pub fn new() -> Self {
         Self
@@ -19,7 +25,7 @@ impl PromptOptimizer {
     pub fn minify_markdown(text: &str) -> String {
         let re_empty_lines = Regex::new(r"\n{3,}").unwrap();
         let re_trailing_ws = Regex::new(r"[ \t]+\n").unwrap();
-        
+
         let mut minified = re_trailing_ws.replace_all(text, "\n").into_owned();
         minified = re_empty_lines.replace_all(&minified, "\n\n").into_owned();
         minified.trim().to_string()
@@ -66,7 +72,7 @@ impl PromptOptimizer {
 
         let mut optimized = Self::minify_markdown(text);
         optimized = Self::deduplicate_instructions(&optimized);
-        
+
         // Try json/xml minification if it looks like json/xml
         if optimized.trim().starts_with('{') || optimized.trim().starts_with('[') {
             optimized = Self::minify_json(&optimized);

@@ -1,6 +1,20 @@
+pub mod benchmark;
 pub mod compressor;
+pub mod context;
+pub mod dashboard;
 pub mod engine;
 pub mod intelligence;
 pub mod optimizer;
+pub mod pipeline;
+pub mod repository;
+pub mod rewrite;
+pub mod simulator;
 
-pub use engine::{TokenEngine, TokenCount, EstimationMode};
+pub use benchmark::BenchmarkFramework;
+pub use context::{ContextMaxxingEngine, ContextScore, RankedChunk};
+pub use dashboard::PerformanceDashboard;
+pub use engine::{EstimationMode, TokenCount, TokenEngine};
+pub use pipeline::AutoPipeline;
+pub use repository::{RepositoryMemory, SmartRepositoryMode, WasteReport};
+pub use rewrite::{PromptRewriter, RewriteMode};
+pub use simulator::{ContextSimulator, SimulationResult};

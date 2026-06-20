@@ -1,9 +1,9 @@
+use ignore::WalkBuilder;
 use rayon::prelude::*;
+use regex::Regex;
 use std::fs;
 use std::io::{self, Read};
 use std::path::Path;
-use ignore::WalkBuilder;
-use regex::Regex;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EstimationMode {
@@ -109,14 +109,16 @@ impl TokenEngine {
 
     /// Batch processing of multiple text strings.
     pub fn count_batch(&self, texts: &[String]) -> TokenCount {
-        texts.iter()
+        texts
+            .iter()
             .map(|t| self.count_text(t))
             .fold(TokenCount::default(), |a, b| a + b)
     }
 
     /// Parallel batch processing of multiple text strings using Rayon.
     pub fn count_batch_parallel(&self, texts: &[String]) -> TokenCount {
-        texts.par_iter()
+        texts
+            .par_iter()
             .map(|t| self.count_text(t))
             .reduce(TokenCount::default, |a, b| a + b)
     }
@@ -125,13 +127,15 @@ impl TokenEngine {
     /// Analyzes all text files in the given directory and its subdirectories.
     pub fn count_repository<P: AsRef<Path>>(&self, path: P) -> TokenCount {
         let walker = WalkBuilder::new(path).build();
-        
-        let files: Vec<_> = walker.filter_map(Result::ok)
-            .filter(|e| e.file_type().map_or(false, |ft| ft.is_file()))
+
+        let files: Vec<_> = walker
+            .filter_map(Result::ok)
+            .filter(|e| e.file_type().is_some_and(|ft| ft.is_file()))
             .map(|e| e.path().to_path_buf())
             .collect();
 
-        files.par_iter()
+        files
+            .par_iter()
             .filter_map(|p| fs::read_to_string(p).ok())
             .map(|content| self.count_text(&content))
             .reduce(TokenCount::default, |a, b| a + b)
