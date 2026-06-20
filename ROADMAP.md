@@ -1,22 +1,14 @@
 # TokenMaxxing Roadmap
 
-## Phase 1: Foundation (v0.1.0) - [COMPLETED]
-- [x] Research & Architecture design
-- [x] Initial project scaffold
-- [x] Implement fast & accurate token estimation engines
-- [x] Basic CLI implementation
-- [x] Unit testing
+## Current Phase: Public Beta Release (v0.5.0-beta) - [COMPLETED]
+- [x] Fast & Accurate estimation algorithms.
+- [x] Context Maxxing Engine (ranking, scoring).
+- [x] Smart Repository Analyzer (artifact, temp, duplicate files scanning).
+- [x] Prompt Rewrite settings (conservative, balanced, aggressive).
+- [x] Dashboard report system (JSON, HTML, Markdown outputs).
+- [x] Python & TS bindings scaffold.
 
-## Phase 2: Context Platform Upgrade (v0.2.0 / V2) - [COMPLETED]
-- [x] **Context Maxxing Engine**: scoring, quality metrics, chunk ranking.
-- [x] **Smart Repository mode**: waste scan (target/build artifacts, lockfiles, duplicates, caches).
-- [x] **Context Simulator**: limit simulations and overflow risk warnings.
-- [x] **Prompt Rewrite Engine**: Conservative, Balanced, and Aggressive telegraphic modes.
-- [x] **Performance Dashboard**: Markdown, JSON, HTML outputs.
-- [x] **Repository Memory**: dependency scanning and components summary.
-- [x] **Benchmark Framework**: counting and analysis metrics tracker.
-- [x] Clippy & Format compliance.
-
-## Phase 3: Future Optimizations (v0.3.0+)
-- [ ] Tree-sitter advanced AST compression for Python, TypeScript, and Rust.
-- [ ] Integration hooks for direct CI/CD actions.
+## Next Phase: Advanced Tree Compression (v0.6.0+)
+- [ ] Tree-sitter AST pruning integration for language-aware code structure normalization.
+- [ ] Git commit pre-hooks wrapper.
+- [ ] Dynamic external tokenizer caching engine.

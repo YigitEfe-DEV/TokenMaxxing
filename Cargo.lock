@@ -371,7 +371,7 @@ dependencies = [
 
 [[package]]
 name = "tokenmaxxing-cli"
-version = "0.1.0"
+version = "0.5.0-beta"
 dependencies = [
  "clap",
  "tokenmaxxing-core",
@@ -379,7 +379,7 @@ dependencies = [
 
 [[package]]
 name = "tokenmaxxing-core"
-version = "0.1.0"
+version = "0.5.0-beta"
 dependencies = [
  "ignore",
  "rayon",
