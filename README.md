@@ -1,19 +1,26 @@
 # TokenMaxxing
 
 ![Rust](https://img.shields.io/badge/Rust-Stable-orange?logo=rust)
+
 ![Status](https://img.shields.io/badge/Status-Beta-yellow)
+
 ![License](https://img.shields.io/badge/License-MIT-green)
+
 ![Version](https://img.shields.io/badge/Version-v0.5.0--beta-blue)
+
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)
 
-[![GitHub Stars](https://img.shields.io/github/stars/YigitEfe-DEV/TokenMaxxing?style=social)](https://github.com/YigitEfe-DEV/TokenMaxxing/stargazers)
-[![GitHub Release](https://img.shields.io/github/v/release/YigitEfe-DEV/TokenMaxxing?include_prereleases)](https://github.com/YigitEfe-DEV/TokenMaxxing/releases)
-[![GitHub Issues](https://img.shields.io/github/issues/YigitEfe-DEV/TokenMaxxing)](https://github.com/YigitEfe-DEV/TokenMaxxing/issues)
-[![GitHub Last Commit](https://img.shields.io/github/last-commit/YigitEfe-DEV/TokenMaxxing)](https://github.com/YigitEfe-DEV/TokenMaxxing/commits/main)
+![GitHub Stars](https://img.shields.io/github/stars/YigitEfe-DEV/TokenMaxxing?style=social)
+
+![GitHub Issues](https://img.shields.io/github/issues/YigitEfe-DEV/TokenMaxxing)
+
+![GitHub Last Commit](https://img.shields.io/github/last-commit/YigitEfe-DEV/TokenMaxxing)
+
+![GitHub Release](https://img.shields.io/github/v/release/YigitEfe-DEV/TokenMaxxing)
 
 ---
 
-## Overview
+## Project Overview
 
 TokenMaxxing is a lightweight repository intelligence and context optimization toolkit built in Rust. It is designed to reduce unnecessary token consumption and optimize prompt structures before injection into LLMs (such as Claude Code) through codebase analysis, duplicate detection, and semantic context compression.
 
@@ -61,7 +68,7 @@ tokenmaxxing simulate .
 
 ---
 
-## Commands
+## Command Reference
 
 | Command | Action |
 | :--- | :--- |
@@ -102,6 +109,14 @@ Evaluated on the local repository structure:
 | **Compression Ratio** | 67.74% (lower is better) |
 | **Optimization Ratio** | 68.15% (lower is better) |
 | **Repository Analysis Speed** | 4 ms |
+
+---
+
+## Validation Results
+Verified against standard tests:
+- **Unit Tests**: 15 tests (all passing).
+- **Quality Checks**: `cargo clippy` and `cargo fmt` verified (0 warnings, 0 errors).
+- **Release Compilation**: Successful.
 
 ---
 

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dashboard report system outputting JSON, HTML, and Markdown performance charts.
 - Benchmark validation framework tracking timing and compression scores.
 - Documented complete command suites and localized Cargo structures.
+- Added GitHub badges and improved repository presentation.
 
 ## [0.1.0] - 2026-06-20
 
