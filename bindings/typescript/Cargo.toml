@@ -1,0 +1,15 @@
+[package]
+name = "tokenmaxxing-ts"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = "2.14"
+napi-derive = "2.14"
+tokenmaxxing-core = { path = "../../tokenmaxxing-core" }
+
+[build-dependencies]
+napi-build = "2.0"

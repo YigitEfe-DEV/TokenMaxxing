@@ -1,0 +1,10 @@
+[package]
+name = "tokenmaxxing-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+clap.workspace = true
+tokenmaxxing-core = { path = "../tokenmaxxing-core" }

@@ -1,0 +1,14 @@
+[package]
+name = "tokenmaxxing-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rayon.workspace = true
+regex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror = "1.0"
+ignore = "0.4"
