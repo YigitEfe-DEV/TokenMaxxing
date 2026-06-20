@@ -318,8 +318,8 @@ test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
 **Status**: **Success**  
 **Actual Output**:
 ```
-   Compiling tokenmaxxing-core v0.1.0 (/home/yigit/TokenMaxxing/tokenmaxxing-core)
-   Compiling tokenmaxxing-cli v0.1.0 (/home/yigit/TokenMaxxing/tokenmaxxing-cli)
+   Compiling tokenmaxxing-core v0.1.0 (./tokenmaxxing-core)
+   Compiling tokenmaxxing-cli v0.1.0 (./tokenmaxxing-cli)
     Finished `release` profile [optimized] target(s) in 4.82s
 ```
 
