@@ -8,6 +8,7 @@ pub mod banner;
 pub mod dashboard;
 pub mod diff;
 pub mod events;
+pub mod logo;
 pub mod render;
 pub mod theme;
 

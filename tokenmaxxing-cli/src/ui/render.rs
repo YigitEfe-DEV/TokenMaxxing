@@ -21,26 +21,24 @@ use super::theme::Theme;
 
 /// The smallest terminal the dashboard can be drawn in.
 const MIN_WIDTH: u16 = 64;
-const MIN_HEIGHT: u16 = 18;
+
+/// The room the panels need, without the banner and the status bar.
+const MIN_PANEL_HEIGHT: u16 = 10;
 
 /// Draws the whole dashboard.
 pub fn draw(frame: &mut Frame, app: &App) {
     let area = frame.area();
+    let banner_height = banner::height(area.width);
 
-    if area.width < MIN_WIDTH || area.height < MIN_HEIGHT {
-        draw_too_small(frame, area, app.theme);
+    // The panels need room of their own, the banner takes what is left.
+    if area.width < MIN_WIDTH || area.height < banner_height + MIN_PANEL_HEIGHT + 1 {
+        draw_too_small(frame, area, app.theme, banner_height);
         return;
     }
 
-    let banner_height: u16 = if usize::from(area.width) >= banner::width() + 2 {
-        (banner::HEIGHT + 1) as u16
-    } else {
-        1
-    };
-
     let rows = Layout::vertical([
         Constraint::Length(banner_height),
-        Constraint::Min(MIN_HEIGHT),
+        Constraint::Min(MIN_PANEL_HEIGHT),
         Constraint::Length(1),
     ])
     .areas::<3>(area);
@@ -58,7 +56,9 @@ pub fn draw(frame: &mut Frame, app: &App) {
 }
 
 /// The message for terminals that are too small.
-fn draw_too_small(frame: &mut Frame, area: Rect, theme: Theme) {
+fn draw_too_small(frame: &mut Frame, area: Rect, theme: Theme, banner_height: u16) {
+    let needed_height = banner_height + MIN_PANEL_HEIGHT + 1;
+
     let lines = vec![
         Line::from(Span::styled(
             "Terminal too small",
@@ -66,7 +66,7 @@ fn draw_too_small(frame: &mut Frame, area: Rect, theme: Theme) {
         )),
         Line::from(""),
         Line::from(format!("current:  {}x{}", area.width, area.height)),
-        Line::from(format!("needed:  {MIN_WIDTH}x{MIN_HEIGHT}")),
+        Line::from(format!("needed:  {MIN_WIDTH}x{needed_height}")),
         Line::from(""),
         Line::from("resize the terminal to see the dashboard"),
     ];
@@ -81,25 +81,7 @@ fn draw_too_small(frame: &mut Frame, area: Rect, theme: Theme) {
 
 /// The banner and the subtitle.
 fn draw_banner(frame: &mut Frame, area: Rect, app: &App) {
-    let theme = app.theme;
-
-    if usize::from(area.width) < banner::width() + 2 {
-        frame.render_widget(
-            Paragraph::new(Line::from(Span::styled(banner::compact(), theme.title()))),
-            area,
-        );
-        return;
-    }
-
-    let mut lines: Vec<Line> = banner::lines()
-        .into_iter()
-        .map(|line| Line::from(Span::styled(line, theme.accent())))
-        .collect();
-
-    lines.push(Line::from(Span::styled(
-        banner::subtitle(banner::supports_unicode()),
-        theme.dim(),
-    )));
+    let lines = banner::lines(area.width, &app.theme);
 
     frame.render_widget(Paragraph::new(Text::from(lines)), area);
 }
