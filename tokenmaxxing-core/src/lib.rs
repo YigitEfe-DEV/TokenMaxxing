@@ -1,3 +1,4 @@
+pub mod analysis;
 pub mod benchmark;
 pub mod compressor;
 pub mod context;
@@ -13,7 +14,9 @@ pub mod repository;
 pub mod rewrite;
 pub mod simulator;
 pub mod tokenizer;
+pub mod usage;
 
+pub use analysis::{count_files, FileTokenCount};
 pub use benchmark::BenchmarkFramework;
 pub use context::{ContextMaxxingEngine, ContextScore, RankedChunk};
 pub use cost::{CostBreakdown, CostEngine, OptimizationReport, TokenUsage};
@@ -28,3 +31,4 @@ pub use simulator::{ContextSimulator, SimulationResult};
 pub use tokenizer::{
     AssetSource, LocalTokenizer, ProviderError, ProviderInfo, TokenCountProvider, TokenizerInfo,
 };
+pub use usage::{EmptyUsageStore, FileUsageStore, UsageError, UsageRecord, UsageStore};

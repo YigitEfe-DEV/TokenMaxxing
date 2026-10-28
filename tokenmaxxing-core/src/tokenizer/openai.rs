@@ -70,6 +70,9 @@ pub enum TokenizerError {
     /// No published encoding is known for the requested model.
     #[error("no OpenAI tokenizer is known for model `{model}`")]
     UnsupportedModel { model: String },
+    /// The encoding is not one of the published ones.
+    #[error("`{encoding}` is not a known OpenAI encoding")]
+    UnsupportedEncoding { encoding: String },
     /// The vocabulary could not be loaded.
     #[error("the vocabulary for encoding `{encoding}` could not be loaded")]
     AssetUnavailable { encoding: String },
@@ -195,6 +198,34 @@ impl LocalTokenizer for OpenAiTokenizer {
 /// Builds the local tokenizer for an OpenAI model.
 pub fn tokenizer_for_model(model: &str) -> Result<Arc<dyn LocalTokenizer>, TokenizerError> {
     Ok(Arc::new(OpenAiTokenizer::for_model(model)?))
+}
+
+/// The encodings that can be compared with each other, with a model that uses
+/// each of them.
+pub fn comparable_encodings() -> Vec<(&'static str, &'static str)> {
+    vec![
+        ("cl100k_base", "gpt-4"),
+        ("o200k_base", "gpt-4o"),
+        ("r50k_base", "gpt2"),
+        ("p50k_base", "text-davinci-001"),
+    ]
+}
+
+/// Builds the local tokenizer of an encoding family, by name.
+pub fn tokenizer_for_encoding(name: &str) -> Result<Arc<dyn LocalTokenizer>, TokenizerError> {
+    let encoding = match name {
+        "cl100k_base" => Tokenizer::Cl100kBase,
+        "o200k_base" => Tokenizer::O200kBase,
+        "r50k_base" => Tokenizer::R50kBase,
+        "p50k_base" => Tokenizer::P50kBase,
+        other => {
+            return Err(TokenizerError::UnsupportedEncoding {
+                encoding: other.to_string(),
+            })
+        }
+    };
+
+    Ok(Arc::new(OpenAiTokenizer::for_encoding(encoding)?))
 }
 
 #[cfg(test)]

@@ -77,6 +77,16 @@ impl CountKind {
         }
     }
 
+    /// A short label that fits into a table column.
+    pub fn short_label(self) -> &'static str {
+        match self {
+            CountKind::Estimated => "estimate",
+            CountKind::Approximate => "approx",
+            CountKind::ExactLocal => "exact",
+            CountKind::ProviderApi => "exact api",
+        }
+    }
+
     /// Returns `true` when the count comes from a real tokenizer or from a
     /// provider API.
     pub fn is_exact(self) -> bool {
@@ -322,11 +332,7 @@ impl TokenEngine {
     ///
     /// Files that cannot be read as UTF-8 are skipped.
     pub fn count_repository<P: AsRef<Path>>(&self, path: P) -> TokenCount {
-        text_files(path)
-            .par_iter()
-            .filter_map(|p| std::fs::read_to_string(p).ok())
-            .map(|content| self.count_text(&content))
-            .reduce(TokenCount::default, |a, b| a + b)
+        crate::analysis::total_of(&crate::analysis::count_files(self, path))
     }
 }
 
