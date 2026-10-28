@@ -288,13 +288,24 @@ fn test_a_narrow_terminal_still_shows_the_logo() {
 
     let text = draw(&app, 64, 26);
 
-    assert!(
-        text.contains('█') || text.contains('▄'),
-        "the logo is shown"
-    );
+    assert!(text.contains("TokenMaxxing"), "the wordmark is shown");
     assert!(text.contains("TOKEN ANALYSIS"), "the subtitle is shown");
 
     std::fs::remove_dir_all(&directory).ok();
+}
+
+#[test]
+fn test_a_terminal_that_is_too_small_shows_the_wordmark() {
+    let app = app(PathBuf::from("/tmp"));
+
+    let text = draw(&app, 40, 20);
+
+    assert!(
+        text.contains("TokenMaxxing"),
+        "the wordmark is the fallback"
+    );
+    assert!(text.contains("Terminal too small"));
+    assert!(text.contains("needed"));
 }
 
 #[test]
@@ -319,9 +330,13 @@ fn test_a_wide_terminal_shows_the_dashboard() {
     assert!(text.contains("Largest files"));
     assert!(text.contains("Model comparison"));
 
-    // The banner holds the logo of the project.
-    assert!(text.contains('█') || text.contains('▄'));
+    // The banner holds the wordmark of the project.
+    assert!(text.contains("TokenMaxxing"));
     assert!(text.contains("TOKEN ANALYSIS"));
+    assert!(
+        !text.contains('█'),
+        "the old artwork is not rendered any more"
+    );
 
     std::fs::remove_dir_all(&directory).ok();
 }

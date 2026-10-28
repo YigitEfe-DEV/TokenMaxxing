@@ -95,6 +95,31 @@ impl Theme {
     pub fn warning(&self) -> Style {
         self.style(Color::Yellow)
     }
+
+    /// The style of the wordmark, the crisp front face.
+    ///
+    /// It is the brightest thing on the screen, so the word stays readable.
+    pub fn wordmark(&self) -> Style {
+        if self.colored {
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default().add_modifier(Modifier::BOLD)
+        }
+    }
+
+    /// The style of the extrusion behind the wordmark.
+    ///
+    /// Red is an accent here. Without colors the extrusion is dimmed instead,
+    /// so it still reads as something that recedes.
+    pub fn wordmark_depth(&self) -> Style {
+        if self.colored {
+            Style::default().fg(Color::Red)
+        } else {
+            Style::default().add_modifier(Modifier::DIM)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -108,6 +133,18 @@ mod tests {
         assert!(!theme.colored);
         assert_eq!(theme.accent().fg, None);
         assert_eq!(theme.dim().fg, None);
+    }
+
+    #[test]
+    fn test_the_wordmark_is_the_brightest_style() {
+        let colored = Theme { colored: true };
+        let plain = Theme::plain();
+
+        assert_eq!(colored.wordmark().fg, Some(Color::White));
+        assert!(colored.wordmark().add_modifier.contains(Modifier::BOLD));
+        assert_eq!(colored.wordmark_depth().fg, Some(Color::Red));
+        assert_eq!(plain.wordmark().fg, None);
+        assert!(plain.wordmark_depth().add_modifier.contains(Modifier::DIM));
     }
 
     #[test]
