@@ -39,10 +39,10 @@ The engine keeps the different levels of certainty apart. Every `TokenCount` car
 
 *   **Fast Mode (`CountKind::Estimated`)**: Character ratio heuristic of roughly 3.5 characters per token. Used for massive repositories.
 *   **Accurate Mode (`CountKind::Approximate`)**: Structural emulation of byte-pair encoding. Whitespace is attached to the following word, punctuation is split per character, and long words are split into sub-word pieces. Without a vocabulary this stays an approximation.
-*   **Exact Mode (`CountKind::ExactLocal`)**: Backed by a `LocalTokenizer` that ships a real vocabulary. Enabled through `TokenEngine::with_tokenizer`.
-*   **Provider Mode (`CountKind::ProviderApi`)**: Backed by a `TokenCountProvider` such as a future Anthropic or OpenAI adapter. The core crate stays free of vendor SDKs and HTTP clients.
-*   **Streaming Tokenization**: Decodes UTF-8 incrementally, carries incomplete multi-byte sequences over read boundaries and keeps pieces aligned across chunk boundaries, so streaming returns the same count as counting the whole text at once.
-*   **Pricing**: Cost estimation takes the rates from the caller, no model prices are hardcoded.
+*   **Exact Mode (`CountKind::ExactLocal`)**: Backed by a `LocalTokenizer` that ships a real vocabulary. The OpenAI encodings (`cl100k_base`, `o200k_base`, `r50k_base`, `p50k_base`) are bundled with the crate, so counting works offline.
+*   **Provider Mode (`CountKind::ProviderApi`)**: Backed by a `TokenCountProvider`. Anthropic does not publish the tokenizer of Claude, so the provider's own `messages/count_tokens` endpoint is the only authoritative source. The HTTP layer sits behind an `HttpTransport` trait, which keeps the core crate free of a vendor SDK and makes the adapter testable without a network.
+*   **Streaming Tokenization**: Decodes UTF-8 incrementally, carries incomplete multi-byte sequences over read boundaries and keeps pieces aligned across chunk boundaries, so streaming returns the same count as counting the whole text at once. A real tokenizer is not chunk local, so an exact count buffers the complete input.
+*   **Pricing**: Cost estimation takes the rates from the caller as a dated `PricingProfile`, no model prices are hardcoded. Input, output, cached input and cache write tokens are priced separately.
 
 #### 3.2 Prompt Optimizer
 *   **Deduplication Engine**: Identifies duplicate instructions across concatenated prompt files.
