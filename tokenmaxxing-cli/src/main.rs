@@ -89,13 +89,18 @@ fn main() {
                     Ok(content) => {
                         let count = engine.count_text(&content);
                         println!("Tokens: {}", count.tokens);
+                        println!("Count Method: {}", count.kind.label());
                         println!("Characters: {}", count.chars);
+                        println!("Bytes: {}", count.bytes);
                     }
                     Err(e) => eprintln!("Error: Failed to read file '{}': {}", path.display(), e),
                 }
             } else {
                 let count = engine.count_repository(path);
                 println!("Total Repository Tokens: {}", count.tokens);
+                println!("Count Method: {}", count.kind.label());
+                println!("Characters: {}", count.chars);
+                println!("Bytes: {}", count.bytes);
             }
         }
         Commands::Optimize { path } => match fs::read_to_string(path) {
@@ -136,7 +141,8 @@ fn main() {
             let engine = TokenEngine::new(EstimationMode::Hybrid);
             let count = engine.count_repository(path);
             println!("Repository Stats for {}", path.display());
-            println!("Estimated Tokens (Hybrid Mode): {}", count.tokens);
+            println!("Estimated Tokens: {}", count.tokens);
+            println!("Count Method: {}", count.kind.label());
         }
         Commands::Report { path } => {
             println!(
@@ -213,6 +219,7 @@ fn main() {
             let result = sim.simulate_repository(path);
             println!("--- Context Simulation ---");
             println!("Total Tokens: {}", result.total_tokens);
+            println!("Count Method: {}", result.count_method.label());
             println!("Context Utilization: {:.2}%", result.context_utilization);
             println!("Overflow Risk: {}", result.overflow_risk);
             println!("Projected Savings: {} tokens", result.projected_savings);
