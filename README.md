@@ -42,6 +42,7 @@ TokenMaxxing helps developers reduce unnecessary token consumption through repos
 - **Provider Counting**: Exact counts for Claude models through Anthropic's own `messages/count_tokens` endpoint. Anthropic does not publish Claude's tokenizer, so there is no local tokenizer for it.
 - **Count Provenance**: Counts are labelled as `estimated`, `approximate`, `exact (local tokenizer)` or `exact (provider API)`. An exact count is only produced when a real tokenizer vocabulary or a provider API backs it.
 - **Cost Estimation**: Dated, externally configured model pricing profiles with separate rates for input, output, cached input and cache write tokens.
+- **Interactive Dashboard**: A terminal dashboard with an ASCII banner, repository analytics, cost estimates, a model comparison and safe optimization workflows. Every change needs an explicit confirmation.
 - **Smart Repository Heuristics**: Detects build artifacts (e.g., target, build, dist), package locks, duplicate files, cache temp folders, and oversized structures.
 - **Context Quality Ranker**: Separates file contexts into logical blocks and ranks them by semantic value.
 - **Context Simulator**: Models repository size ratio against typical LLM context bounds (200k tokens) to alert users of context overflow risks.
@@ -74,6 +75,9 @@ tokenmaxxing waste .
 
 # Evaluate context window space utilization
 tokenmaxxing simulate .
+
+# Open the interactive dashboard
+tokenmaxxing ui .
 ```
 
 ---
@@ -88,6 +92,7 @@ tokenmaxxing simulate .
 | `count <PATH> --mode compare` | Runs every available method and compares the results. |
 | `tokenizers` | Lists the tokenizers and models that can be counted exactly. |
 | `cost <PATH> --pricing <FILE>` | Reports the token and cost effect of optimizing a prompt. |
+| `ui [PATH]` | Opens the interactive dashboard. |
 | `optimize <PATH>` | Minifies Markdown, JSON, or XML formatting. |
 | `compress <PATH>` | Trims redundant whitespace and boilerplate segments. |
 | `analyze <PATH>` | Logs oversized structures and suspected duplicated files. |
@@ -133,6 +138,100 @@ tokenmaxxing count README.md --mode compare
 Dated model names such as `gpt-4o-2024-08-06` resolve to the same encoding as their family.
 
 There is **no local tokenizer for Claude**. Anthropic does not publish its tokenizer, and a generic byte-pair-encoding tokenizer is not a substitute: `tokenmaxxing count --mode local --provider anthropic` fails with an explanation instead of returning a number that looks exact.
+
+---
+
+## Interactive Dashboard
+
+```bash
+tokenmaxxing ui                       # the current directory
+tokenmaxxing ui /path/to/repository   # another directory
+tokenmaxxing ui . --pricing pricing.json --model gpt-4o
+tokenmaxxing ui . --usage ~/.local/share/tokenmaxxing/usage.jsonl
+```
+
+The dashboard is a terminal application. It draws six panels and never writes
+to a file without an explicit confirmation.
+
+```
+█████  ███  █   █ █████ █   █ █   █  ███  █   █ █   █ █████ █   █  ███
+ ███  █   █ █  █  █     ██  █ ██ ██ █  █   █ █   █ █    █   ██  █ █   █
+ ███  █   █ ███   ███   █ █ █ █ █ █ █████   █     █     █   █ █ █ █  ██
+ ███  █   █ █  █  █     █  ██ █   █ █  █   █ █   █ █    █   █  ██ █   █
+ ███   ███  █   █ █████ █   █ █   █ █  █  █   █ █   █ █████ █   █  ███
+TOKEN ANALYSIS · COST OPTIMIZATION · BETTER CONTEXT
+```
+
+### Keyboard shortcuts
+
+| Key | Action |
+| :--- | :--- |
+| `j` / `k`, `down` / `up` | Move inside the focused panel |
+| `tab`, `l` / `h` | Switch the focused panel |
+| `enter` | Open the selection (file details, or the preview of a change) |
+| `/` | Search the file list |
+| `s` | Change the sort order of the file list |
+| `r` | Scan again |
+| `?` | Open and close the help |
+| `q` / `esc` | Go back, leave the dashboard |
+
+### What the panels mean
+
+| Panel | Content |
+| :--- | :--- |
+| **Overview** | Files scanned, bytes, characters, tokens, the method that produced the token count and the estimated cost when a pricing profile is loaded. |
+| **Token usage** | The input and output tokens of the recorded usage and a chart of the history. Empty when there is no history. |
+| **Largest files** | The files with the most tokens, their share of the total and their estimated cost. Sortable by tokens, size or path. |
+| **Model comparison** | The same text counted with every supported tokenizer and with the estimators. Every row states the model, the tokenizer and the method. |
+| **Optimization suggestions** | Large files, duplicated files and repeated instruction lines, each with the reason it was suggested and the expected saving. |
+| **Provider usage** | The usage records a provider reported. The token counts of the repository are **not** provider usage and the panel says so. |
+
+### Provenance of the numbers
+
+- Token counts of the repository come from the token engine, and every panel
+  states the method: `exact` (a real tokenizer), `estimate` or `approx`.
+- The costs are estimates. They need a dated pricing profile and a model that
+  the profile knows; without them the panel says that no price is available.
+- The expected saving of a suggestion is an estimate until the change is
+  applied and measured again.
+- The usage history holds only counts, models and timestamps. No prompt, no
+  file content and no credential is written to it.
+
+### Applying a change
+
+A suggestion never changes a file on its own. `enter` opens a preview with the
+diff of the change, `enter` again applies it and `esc` cancels it. Removing a
+duplicate only happens when the file that stays is still identical.
+
+### Without the dashboard
+
+Every command of the CLI works without the terminal interface, so scripts and
+CI are not affected:
+
+```bash
+tokenmaxxing count . --mode local --provider openai
+tokenmaxxing stats .
+tokenmaxxing dashboard . --json
+```
+
+A build without the terminal dependencies is possible as well:
+
+```bash
+cargo build -p tokenmaxxing-cli --no-default-features
+```
+
+Such a build prints a short message instead of starting the dashboard.
+
+### Known limitations
+
+- The dashboard needs a real terminal. Without one it refuses to start and
+  points at the commands that work in a script.
+- A terminal below 64x18 shows a message instead of the panels.
+- The scan reads the whole directory. On a very large repository the first
+  scan takes a moment; the display stays responsive while it runs.
+- The usage history is empty unless a provider integration writes to it. The
+  tool does not know the usage of Claude Code or Codex sessions on its own.
+
 
 ---
 
@@ -217,7 +316,7 @@ cargo test --release --test tokenizer_benchmark -- --ignored --nocapture
 
 ## Validation Results
 Verified against standard tests:
-- **Unit Tests**: 85 tests (all passing), 1 live provider test ignored by default.
+- **Unit Tests**: 144 tests (all passing), 2 live provider tests ignored by default.
 - **Quality Checks**: `cargo clippy` and `cargo fmt` verified (0 warnings, 0 errors).
 - **Release Compilation**: Successful.
 
@@ -234,6 +333,7 @@ Verified against standard tests:
 ### Future Milestones
 - [ ] Tree-sitter advanced AST compression support.
 - [ ] Pre-commit git hooks integration.
+- [ ] A provider integration that writes real usage records for the dashboard.
 
 ---
 
