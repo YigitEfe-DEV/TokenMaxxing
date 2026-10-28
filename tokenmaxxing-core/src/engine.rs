@@ -322,20 +322,26 @@ impl TokenEngine {
     ///
     /// Files that cannot be read as UTF-8 are skipped.
     pub fn count_repository<P: AsRef<Path>>(&self, path: P) -> TokenCount {
-        let walker = WalkBuilder::new(path).build();
-
-        let files: Vec<_> = walker
-            .filter_map(Result::ok)
-            .filter(|e| e.file_type().is_some_and(|ft| ft.is_file()))
-            .map(|e| e.path().to_path_buf())
-            .collect();
-
-        files
+        text_files(path)
             .par_iter()
             .filter_map(|p| std::fs::read_to_string(p).ok())
             .map(|content| self.count_text(&content))
             .reduce(TokenCount::default, |a, b| a + b)
     }
+}
+
+/// Lists the files of a directory tree.
+///
+/// The list is used for repository wide counting and for the provider
+/// adapters, which have to send one message per file.
+pub fn text_files<P: AsRef<Path>>(path: P) -> Vec<std::path::PathBuf> {
+    let walker = WalkBuilder::new(path).build();
+
+    walker
+        .filter_map(Result::ok)
+        .filter(|e| e.file_type().is_some_and(|ft| ft.is_file()))
+        .map(|e| e.path().to_path_buf())
+        .collect()
 }
 
 /// Converts a character count into a token count with the ratio estimator.
