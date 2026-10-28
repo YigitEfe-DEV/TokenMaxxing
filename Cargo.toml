@@ -3,6 +3,10 @@ members = [
     "tokenmaxxing-core",
     "tokenmaxxing-cli",
 ]
+exclude = [
+    "bindings/python",
+    "bindings/typescript",
+]
 resolver = "2"
 
 [workspace.package]

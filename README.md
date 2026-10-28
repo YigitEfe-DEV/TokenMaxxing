@@ -37,7 +37,8 @@ TokenMaxxing helps developers reduce unnecessary token consumption through repos
 
 ## Features
 
-- **Token Counting Engine**: Fast, Accurate, and Hybrid subword token estimation using parallel directory walkers.
+- **Token Counting Engine**: Fast, Accurate, and Hybrid subword token estimation using parallel directory walkers. Every count reports how it was produced, so an estimate is never presented as an exact number.
+- **Count Provenance**: Counts are labelled as `estimated`, `approximate`, `exact (local tokenizer)` or `exact (provider API)`. An exact count is only produced when a real tokenizer vocabulary or a provider API backs it.
 - **Smart Repository Heuristics**: Detects build artifacts (e.g., target, build, dist), package locks, duplicate files, cache temp folders, and oversized structures.
 - **Context Quality Ranker**: Separates file contexts into logical blocks and ranks them by semantic value.
 - **Context Simulator**: Models repository size ratio against typical LLM context bounds (200k tokens) to alert users of context overflow risks.
@@ -78,11 +79,11 @@ tokenmaxxing simulate .
 
 | Command | Action |
 | :--- | :--- |
-| `count <PATH>` | Counts tokens in a file or directory using fast or accurate modes. |
+| `count <PATH>` | Counts tokens in a file or directory using fast or accurate modes and reports the count method. |
 | `optimize <PATH>` | Minifies Markdown, JSON, or XML formatting. |
 | `compress <PATH>` | Trims redundant whitespace and boilerplate segments. |
 | `analyze <PATH>` | Logs oversized structures and suspected duplicated files. |
-| `stats <PATH>` | Outputs total estimated tokens using the hybrid algorithm. |
+| `stats <PATH>` | Outputs total estimated tokens using the hybrid algorithm and the count method. |
 | `report <PATH>` | Compiles an optimization report as Markdown dashboard. |
 | `benchmark <PATH>` | Runs local execution speed benchmarks and saves metrics. |
 | `context <PATH>` | Renders quality metrics, noise ratio, and optimization opportunities. |
@@ -94,6 +95,26 @@ tokenmaxxing simulate .
 | `summarize <PATH>` | Evaluates active module types and component footprints. |
 | `memory <PATH>` | Tracks parsed cargo dependency vectors and workspace layouts. |
 | `dashboard <PATH>` | Outputs full metrics to terminal, `--html` file, or `--json` parser. |
+
+---
+
+## Token Count Accuracy
+
+TokenMaxxing separates three kinds of token counts, and every result carries the
+method that produced it:
+
+| Method | Produced by | Trust |
+| :--- | :--- | :--- |
+| `estimated` | Character ratio heuristic (`Fast` and large `Hybrid` inputs) | Order of magnitude only. |
+| `approximate` | Structural byte-pair-encoding emulation (`Accurate` and small `Hybrid` inputs) | Close to a real tokenizer, but no vocabulary is loaded. |
+| `exact (local tokenizer)` | A tokenizer that ships a real vocabulary | Exact for that tokenizer. |
+| `exact (provider API)` | A provider API that owns the authoritative tokenizer | Exact for that model. |
+
+Rules the engine follows:
+
+- A count is never labelled exact unless a real tokenizer or a provider API produced it.
+- No model prices are hardcoded; cost estimation takes the rates from the caller.
+- Streaming a text yields the same count as counting the whole text, independent of how the reader splits the bytes. UTF-8 sequences that straddle a read boundary are carried over instead of being corrupted.
 
 ---
 
@@ -120,7 +141,7 @@ Evaluated on the local repository structure:
 
 ## Validation Results
 Verified against standard tests:
-- **Unit Tests**: 15 tests (all passing).
+- **Unit Tests**: 40 tests (all passing).
 - **Quality Checks**: `cargo clippy` and `cargo fmt` verified (0 warnings, 0 errors).
 - **Release Compilation**: Successful.
 

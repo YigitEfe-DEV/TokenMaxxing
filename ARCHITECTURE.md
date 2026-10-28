@@ -35,9 +35,14 @@ TokenMaxxing is built on a modular architecture:
 ### Modules Breakdown
 
 #### 3.1 Token Engine
-*   **Fast Mode**: Uses regex/heuristic approximations for massive repositories.
-*   **Accurate Mode**: Implements rigorous BPE mapping matching Claude's tokenizer.
-*   **Streaming Tokenization**: Processes tokens via streams for memory efficiency on huge files.
+The engine keeps the different levels of certainty apart. Every `TokenCount` carries a `CountKind` that states how it was produced.
+
+*   **Fast Mode (`CountKind::Estimated`)**: Character ratio heuristic of roughly 3.5 characters per token. Used for massive repositories.
+*   **Accurate Mode (`CountKind::Approximate`)**: Structural emulation of byte-pair encoding. Whitespace is attached to the following word, punctuation is split per character, and long words are split into sub-word pieces. Without a vocabulary this stays an approximation.
+*   **Exact Mode (`CountKind::ExactLocal`)**: Backed by a `LocalTokenizer` that ships a real vocabulary. Enabled through `TokenEngine::with_tokenizer`.
+*   **Provider Mode (`CountKind::ProviderApi`)**: Backed by a `TokenCountProvider` such as a future Anthropic or OpenAI adapter. The core crate stays free of vendor SDKs and HTTP clients.
+*   **Streaming Tokenization**: Decodes UTF-8 incrementally, carries incomplete multi-byte sequences over read boundaries and keeps pieces aligned across chunk boundaries, so streaming returns the same count as counting the whole text at once.
+*   **Pricing**: Cost estimation takes the rates from the caller, no model prices are hardcoded.
 
 #### 3.2 Prompt Optimizer
 *   **Deduplication Engine**: Identifies duplicate instructions across concatenated prompt files.

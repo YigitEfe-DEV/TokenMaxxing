@@ -31,8 +31,9 @@ impl PerformanceDashboard {
 
         md.push_str("## Token Assessment\n");
         md.push_str(&format!(
-            "- **Initial Count Estimate**: {} tokens\n",
-            report.initial_tokens
+            "- **Initial Count Estimate**: {} tokens ({})\n",
+            report.initial_tokens,
+            report.initial_count_method.label()
         ));
         md.push_str(&format!(
             "- **Context Window Utilization**: {:.2}%\n",
@@ -105,8 +106,9 @@ impl PerformanceDashboard {
 
         html.push_str("<div class='card'>\n<h3>Token Statistics</h3>\n<ul>\n");
         html.push_str(&format!(
-            "<li>Initial Token Estimate: {}</li>\n",
-            report.initial_tokens
+            "<li>Initial Token Estimate: {} ({})</li>\n",
+            report.initial_tokens,
+            report.initial_count_method.label()
         ));
         html.push_str(&format!(
             "<li>Context Utilization: {:.2}%</li>\n",
