@@ -8,3 +8,11 @@ license.workspace = true
 [dependencies]
 clap.workspace = true
 tokenmaxxing-core = { path = "../tokenmaxxing-core" }
+ratatui = { version = "0.30", optional = true }
+crossterm = { version = "0.29", optional = true }
+
+[features]
+default = ["tui"]
+# The interactive dashboard. A headless build can drop it with
+# `cargo build --no-default-features`.
+tui = ["dep:ratatui", "dep:crossterm"]

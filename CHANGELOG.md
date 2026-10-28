@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Interactive terminal dashboard (`tokenmaxxing ui`) built with `ratatui` and `crossterm`: an ASCII banner, repository analytics, cost estimates, a model comparison, optimization suggestions and provider usage.
+- Six dashboard panels with a keyboard interface, a search field, sortable file lists, a help screen and a diff preview for proposed changes.
+- `analysis` module in the core crate that counts the files of a tree individually, so the dashboard does not have to implement its own scanning.
+- `usage` module in the core crate with a provider neutral usage record, a file store for the history and an empty store that reports "no usage" instead of inventing numbers.
+- `CountKind::short_label` for table columns.
+- The `tui` feature of the CLI crate. A build with `--no-default-features` keeps the terminal dependencies out and prints a short message instead of starting the dashboard.
 - `CountKind` provenance on every token count (`Estimated`, `Approximate`, `ExactLocal`, `ProviderApi`), so an estimate can never be presented as an exact number.
 - `LocalTokenizer` trait for tokenizers with a real vocabulary, and `TokenEngine::with_tokenizer` for exact local counts.
 - `TokenCountProvider` trait plus `ProviderError` as a provider-neutral interface for future Anthropic and OpenAI adapters.
@@ -30,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - An exact count request is never silently downgraded to an estimate: asking for a local Claude count or an OpenAI API count fails with an explanation of what is available instead.
+- The dashboard resolves the paths of a proposed change against the scanned root, so a change no longer lands in the working directory of the process.
 
 ## [0.5.0-beta] - 2026-06-20
 
