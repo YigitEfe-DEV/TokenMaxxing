@@ -38,7 +38,10 @@ TokenMaxxing helps developers reduce unnecessary token consumption through repos
 ## Features
 
 - **Token Counting Engine**: Fast, Accurate, and Hybrid subword token estimation using parallel directory walkers. Every count reports how it was produced, so an estimate is never presented as an exact number.
+- **Real Tokenizers**: Exact counts with the published OpenAI byte-pair-encoding vocabularies (`cl100k_base`, `o200k_base`, `r50k_base`, `p50k_base`). The vocabularies are bundled, so counting works offline.
+- **Provider Counting**: Exact counts for Claude models through Anthropic's own `messages/count_tokens` endpoint. Anthropic does not publish Claude's tokenizer, so there is no local tokenizer for it.
 - **Count Provenance**: Counts are labelled as `estimated`, `approximate`, `exact (local tokenizer)` or `exact (provider API)`. An exact count is only produced when a real tokenizer vocabulary or a provider API backs it.
+- **Cost Estimation**: Dated, externally configured model pricing profiles with separate rates for input, output, cached input and cache write tokens.
 - **Smart Repository Heuristics**: Detects build artifacts (e.g., target, build, dist), package locks, duplicate files, cache temp folders, and oversized structures.
 - **Context Quality Ranker**: Separates file contexts into logical blocks and ranks them by semantic value.
 - **Context Simulator**: Models repository size ratio against typical LLM context bounds (200k tokens) to alert users of context overflow risks.
@@ -80,6 +83,11 @@ tokenmaxxing simulate .
 | Command | Action |
 | :--- | :--- |
 | `count <PATH>` | Counts tokens in a file or directory using fast or accurate modes and reports the count method. |
+| `count <PATH> --mode local --provider openai` | Counts exactly with the published OpenAI vocabulary. |
+| `count <PATH> --mode api --provider anthropic` | Counts exactly through Anthropic's counting endpoint. |
+| `count <PATH> --mode compare` | Runs every available method and compares the results. |
+| `tokenizers` | Lists the tokenizers and models that can be counted exactly. |
+| `cost <PATH> --pricing <FILE>` | Reports the token and cost effect of optimizing a prompt. |
 | `optimize <PATH>` | Minifies Markdown, JSON, or XML formatting. |
 | `compress <PATH>` | Trims redundant whitespace and boilerplate segments. |
 | `analyze <PATH>` | Logs oversized structures and suspected duplicated files. |
@@ -98,6 +106,63 @@ tokenmaxxing simulate .
 
 ---
 
+## Token Counting
+
+```bash
+# Heuristic estimate, no tokenizer is involved
+tokenmaxxing count README.md
+
+# Exact count with the published OpenAI vocabulary (works offline)
+tokenmaxxing count README.md --mode local --provider openai --model gpt-4o
+
+# Exact count for a Claude model through the Anthropic API
+export ANTHROPIC_API_KEY=...
+tokenmaxxing count README.md --mode api --provider anthropic --model claude-opus-5-5
+
+# Compare every method that is available
+tokenmaxxing count README.md --mode compare
+```
+
+### Model coverage
+
+| Provider | Counting | Models |
+| :--- | :--- | :--- |
+| OpenAI | local tokenizer, exact | `cl100k_base`: gpt-4, gpt-4-32k, gpt-4-turbo, gpt-3.5-turbo, gpt-35-turbo. `o200k_base`: gpt-4o, gpt-4.1, gpt-4.5, o1, o3, o4-mini, gpt-5 and the Codex variants. `r50k_base`: gpt2. `p50k_base`: text-davinci-001. |
+| Anthropic | provider API, exact for the model | every model the Anthropic API accepts, for example `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`. |
+
+Dated model names such as `gpt-4o-2024-08-06` resolve to the same encoding as their family.
+
+There is **no local tokenizer for Claude**. Anthropic does not publish its tokenizer, and a generic byte-pair-encoding tokenizer is not a substitute: `tokenmaxxing count --mode local --provider anthropic` fails with an explanation instead of returning a number that looks exact.
+
+---
+
+## Cost Estimation
+
+Cost estimation needs a pricing profile, because model prices change and differ per provider and per plan. The crate ships no prices at all.
+
+```json
+{
+  "currency": "USD",
+  "effective_date": "2026-10-01",
+  "source": "https://your-provider.example/pricing",
+  "models": {
+    "gpt-4o": {
+      "input_per_million_tokens": 2.5,
+      "output_per_million_tokens": 10.0,
+      "cached_input_per_million_tokens": 1.25
+    }
+  }
+}
+```
+
+```bash
+tokenmaxxing cost PROMPT.md --pricing pricing.json --model gpt-4o
+```
+
+The report states the token counts before and after the optimization, what was removed, the cost difference, and where every number comes from. It does not claim that a shorter prompt keeps the task quality, because nothing in the tool measures that.
+
+---
+
 ## Token Count Accuracy
 
 TokenMaxxing separates three kinds of token counts, and every result carries the
@@ -113,6 +178,7 @@ method that produced it:
 Rules the engine follows:
 
 - A count is never labelled exact unless a real tokenizer or a provider API produced it.
+- An exact request is never silently downgraded to an estimate. Asking for a local Claude count fails with an explanation.
 - No model prices are hardcoded; cost estimation takes the rates from the caller.
 - Streaming a text yields the same count as counting the whole text, independent of how the reader splits the bytes. UTF-8 sequences that straddle a read boundary are carried over instead of being corrupted.
 
@@ -128,20 +194,30 @@ TokenMaxxing segregates logic across:
 ---
 
 ## Benchmarks
-Evaluated on the local repository structure:
 
-| Metric | Performance |
-| :--- | :--- |
-| **Counting Speed** | 43 ms |
-| **Compression Ratio** | 67.74% (lower is better) |
-| **Optimization Ratio** | 68.15% (lower is better) |
-| **Repository Analysis Speed** | 4 ms |
+Counting the five representative project files of this repository (54 662 bytes), release build:
+
+| Method | Tokens | Time | Throughput | Against the tokenizer |
+| :--- | ---: | ---: | ---: | ---: |
+| **Ratio estimate** | 15 608 | 0.003 ms | 15 812 MB/s | +21.24 % |
+| **Structural approximation** | 17 086 | 0.282 ms | 193.9 MB/s | +32.72 % |
+| **tiktoken `o200k_base`** | 12 874 | 3.582 ms | 15.3 MB/s | exact |
+
+Peak resident set of the benchmark process: 53 876 kB.
+
+The exact tokenizer is roughly 1 200 times slower than the ratio estimate and about 13 times slower than the structural approximation. That is the price of an exact number.
+
+Reproduce it with:
+
+```bash
+cargo test --release --test tokenizer_benchmark -- --ignored --nocapture
+```
 
 ---
 
 ## Validation Results
 Verified against standard tests:
-- **Unit Tests**: 40 tests (all passing).
+- **Unit Tests**: 85 tests (all passing), 1 live provider test ignored by default.
 - **Quality Checks**: `cargo clippy` and `cargo fmt` verified (0 warnings, 0 errors).
 - **Release Compilation**: Successful.
 

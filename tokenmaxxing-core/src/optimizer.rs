@@ -3,11 +3,35 @@ use std::collections::HashSet;
 
 pub struct PromptOptimizer;
 
+/// A group of content that the optimizer removed.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct RemovedContent {
+    /// What kind of content was removed.
+    pub category: String,
+    /// Number of bytes that were removed.
+    pub bytes: usize,
+    /// Number of lines that were removed.
+    pub lines: usize,
+}
+
+impl RemovedContent {
+    /// Describes what disappeared between `before` and `after`.
+    pub fn between(category: &str, before: &str, after: &str) -> Self {
+        Self {
+            category: category.to_string(),
+            bytes: before.len().saturating_sub(after.len()),
+            lines: before.lines().count().saturating_sub(after.lines().count()),
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct OptimizationReport {
     pub original_chars: usize,
     pub optimized_chars: usize,
     pub reduction_percentage: f64,
+    /// What the optimizer removed, step by step.
+    pub removed: Vec<RemovedContent>,
 }
 
 impl Default for PromptOptimizer {
@@ -69,15 +93,41 @@ impl PromptOptimizer {
     /// Optimize a prompt by applying multiple minifications
     pub fn optimize_prompt(&self, text: &str) -> (String, OptimizationReport) {
         let original_chars = text.len();
+        let mut removed = Vec::new();
 
-        let mut optimized = Self::minify_markdown(text);
-        optimized = Self::deduplicate_instructions(&optimized);
+        let minified = Self::minify_markdown(text);
+        removed.push(RemovedContent::between(
+            "trailing whitespace and blank lines",
+            text,
+            &minified,
+        ));
+        let mut optimized = minified;
+
+        let deduplicated = Self::deduplicate_instructions(&optimized);
+        removed.push(RemovedContent::between(
+            "repeated instruction lines",
+            &optimized,
+            &deduplicated,
+        ));
+        optimized = deduplicated;
 
         // Try json/xml minification if it looks like json/xml
         if optimized.trim().starts_with('{') || optimized.trim().starts_with('[') {
-            optimized = Self::minify_json(&optimized);
+            let compacted = Self::minify_json(&optimized);
+            removed.push(RemovedContent::between(
+                "json formatting whitespace",
+                &optimized,
+                &compacted,
+            ));
+            optimized = compacted;
         } else if optimized.trim().starts_with('<') {
-            optimized = Self::minify_xml(&optimized);
+            let compacted = Self::minify_xml(&optimized);
+            removed.push(RemovedContent::between(
+                "xml formatting whitespace",
+                &optimized,
+                &compacted,
+            ));
+            optimized = compacted;
         }
 
         let optimized_chars = optimized.len();
@@ -91,6 +141,7 @@ impl PromptOptimizer {
             original_chars,
             optimized_chars,
             reduction_percentage,
+            removed,
         };
 
         (optimized, report)

@@ -10,9 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `CountKind` provenance on every token count (`Estimated`, `Approximate`, `ExactLocal`, `ProviderApi`), so an estimate can never be presented as an exact number.
 - `LocalTokenizer` trait for tokenizers with a real vocabulary, and `TokenEngine::with_tokenizer` for exact local counts.
-- `TokenCountProvider` trait plus `ProviderError` as a provider-neutral interface for future Anthropic and OpenAI adapters. No live API calls are implemented in this phase.
-- `pricing` module with `ModelPricing`, `PricingProvider` and `estimate_cost`. No model prices are hardcoded; rates are supplied by the caller.
-- Streaming and tokenizer regression tests, including chunk-size invariance and UTF-8 boundary coverage.
+- `TokenCountProvider` trait plus `ProviderError` as a provider-neutral interface for future Anthropic and OpenAI adapters.
+- OpenAI tokenizers based on the published byte-pair-encoding vocabularies (`cl100k_base`, `o200k_base`, `r50k_base`, `p50k_base`), bundled with the crate so counting works offline.
+- Anthropic token counting through the provider's own `messages/count_tokens` endpoint, behind an `HttpTransport` trait so it can be tested without a network.
+- `TokenizerInfo` and `ProviderInfo` record the tokenizer identity, version, encoding, supported models, vocabulary source and the input types that are not supported.
+- CLI: `count --mode estimate|local|api|compare`, `count --provider`, `count --model`, the `cost` command and the `tokenizers` command.
+- `pricing` module with dated, externally configured `PricingProfile` files, separate rates for input, output, cached input and cache write tokens, and the `cost` module with the optimization report.
+- Streaming, tokenizer and provider regression tests, including chunk-size invariance, UTF-8 boundary coverage and the reference token ids of the published vocabularies.
+- An ignored benchmark that compares the real tokenizer with the estimators.
 
 ### Changed
 - Streaming tokenization decodes UTF-8 incrementally and carries incomplete multi-byte sequences across read boundaries instead of inserting replacement characters.
@@ -21,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The structural estimator attaches whitespace to the word that follows it, which brings it closer to real byte-pair-encoding tokenizers.
 - `Accurate` mode is documented and labelled as an approximation rather than an exact count.
 - CLI and dashboard output state the count method next to every token number.
+- The optimizer reports what it removed, step by step.
+
+### Fixed
+- An exact count request is never silently downgraded to an estimate: asking for a local Claude count or an OpenAI API count fails with an explanation of what is available instead.
 
 ## [0.5.0-beta] - 2026-06-20
 
