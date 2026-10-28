@@ -11,6 +11,9 @@ pub mod events;
 pub mod render;
 pub mod theme;
 
+#[cfg(test)]
+mod tests;
+
 use std::io::{self, IsTerminal};
 use std::path::PathBuf;
 
