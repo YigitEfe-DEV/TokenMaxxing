@@ -1,6 +1,7 @@
 pub mod benchmark;
 pub mod compressor;
 pub mod context;
+pub mod cost;
 pub mod dashboard;
 pub mod engine;
 pub mod intelligence;
@@ -15,10 +16,11 @@ pub mod tokenizer;
 
 pub use benchmark::BenchmarkFramework;
 pub use context::{ContextMaxxingEngine, ContextScore, RankedChunk};
+pub use cost::{CostBreakdown, CostEngine, OptimizationReport, TokenUsage};
 pub use dashboard::PerformanceDashboard;
 pub use engine::{CountKind, EstimationMode, TokenCount, TokenEngine};
 pub use pipeline::AutoPipeline;
-pub use pricing::{estimate_cost, ModelPricing, PricingProvider};
+pub use pricing::{estimate_cost, ModelPricing, PricingProfile, PricingProvider};
 pub use provider::{AnthropicTokenCounter, ProviderKind};
 pub use repository::{RepositoryMemory, SmartRepositoryMode, WasteReport};
 pub use rewrite::{PromptRewriter, RewriteMode};
