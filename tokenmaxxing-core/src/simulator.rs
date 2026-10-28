@@ -1,10 +1,13 @@
-use crate::engine::{EstimationMode, TokenEngine};
+use crate::engine::{CountKind, EstimationMode, TokenEngine};
 use crate::repository::SmartRepositoryMode;
 use std::path::Path;
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct SimulationResult {
     pub total_tokens: usize,
+    /// How `total_tokens` was produced. The count is an estimate unless it
+    /// comes from a real tokenizer.
+    pub count_method: CountKind,
     pub context_utilization: f64,
     pub projected_savings: usize,
     pub overflow_risk: String,
@@ -74,6 +77,7 @@ impl ContextSimulator {
 
         SimulationResult {
             total_tokens,
+            count_method: repo_count.kind,
             context_utilization: context_utilization.min(100.0),
             projected_savings,
             overflow_risk,

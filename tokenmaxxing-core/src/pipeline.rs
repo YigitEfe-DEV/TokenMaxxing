@@ -1,4 +1,4 @@
-use crate::engine::{EstimationMode, TokenEngine};
+use crate::engine::{CountKind, EstimationMode, TokenEngine};
 use crate::repository::{SmartRepositoryMode, WasteReport};
 use crate::simulator::{ContextSimulator, SimulationResult};
 use std::path::{Path, PathBuf};
@@ -7,6 +7,9 @@ use std::path::{Path, PathBuf};
 pub struct PipelineReport {
     pub target_path: PathBuf,
     pub initial_tokens: usize,
+    /// How `initial_tokens` was produced. The count is an estimate unless it
+    /// comes from a real tokenizer.
+    pub initial_count_method: CountKind,
     pub waste_analysis: WasteReport,
     pub simulation: SimulationResult,
     pub optimization_score: f64,
@@ -50,6 +53,7 @@ impl AutoPipeline {
         PipelineReport {
             target_path: path.to_path_buf(),
             initial_tokens: repo_count.tokens,
+            initial_count_method: repo_count.kind,
             waste_analysis,
             simulation,
             optimization_score,
