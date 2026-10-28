@@ -1,82 +1,86 @@
 //! The banner of the dashboard.
 //!
-//! The banner is the hand drawn logo of the project. The artwork is scaled
-//! down to the size that fits into the terminal, and a terminal that is too
-//! narrow for it gets a short text instead.
+//! The banner is a minimal wordmark: the name of the project in a crisp front
+//! face with a restrained extrusion behind it. The depth comes from the
+//! typography, not from a picture.
+//!
+//! The wordmark uses two rows, the subtitle below it makes three in total.
 
 use ratatui::text::{Line, Span};
 
-use super::logo::{self, LogoCell, SCALE_FACTORS};
 use super::theme::Theme;
 
-/// The subtitle below the logo.
+/// The name of the project.
+const WORDMARK: &str = "TokenMaxxing";
+
+/// The subtitle below the wordmark.
 const SUBTITLE: &str = "TOKEN ANALYSIS · COST OPTIMIZATION · BETTER CONTEXT";
 
 /// The subtitle for terminals without unicode support.
 const SUBTITLE_ASCII: &str = "TOKEN ANALYSIS | COST OPTIMIZATION | BETTER CONTEXT";
 
-/// The text that is shown when the logo does not fit.
-const FALLBACK: &str = "TokenMaxxing";
+/// The rows of the wordmark: the extrusion and the front face.
+const WORDMARK_HEIGHT: u16 = 2;
 
-/// The number of rows of the artwork.
-const ARTWORK_HEIGHT: usize = 12;
+/// The smallest terminal that shows the wordmark and the subtitle.
+const MIN_WIDTH: u16 = 24;
 
-/// The artwork of the logo.
-fn artwork() -> Vec<Vec<LogoCell>> {
-    logo::parse(logo::source())
-}
-
-/// The width of the artwork.
-fn artwork_width() -> usize {
-    artwork().iter().map(Vec::len).max().unwrap_or(0)
-}
-
-/// The scale factor that fits into a terminal of the given width.
-///
-/// The sharpest variant wins. `None` means that even the smallest variant is
-/// too wide, and the text fallback has to be used.
-pub fn scale_factor(width: u16) -> Option<usize> {
-    let source_width = artwork_width();
-
-    SCALE_FACTORS
-        .iter()
-        .copied()
-        .find(|factor| logo::scaled_width(source_width, *factor) <= usize::from(width))
-}
-
-/// The number of rows the banner needs, including the subtitle.
+/// The number of rows the banner needs.
 pub fn height(width: u16) -> u16 {
-    match scale_factor(width) {
-        Some(factor) => (ARTWORK_HEIGHT / factor) as u16 + 1,
-        None => 2,
+    if width < MIN_WIDTH {
+        1
+    } else {
+        WORDMARK_HEIGHT + 1
     }
 }
 
 /// The lines of the banner.
 ///
-/// The logo comes first, the subtitle below it.
+/// The extrusion sits one column to the right of the front face, so the word
+/// reads as a solid shape that recedes into the background.
 pub fn lines(width: u16, theme: &Theme) -> Vec<Line<'static>> {
-    let Some(factor) = scale_factor(width) else {
-        return fallback_lines(theme);
-    };
+    if width < MIN_WIDTH {
+        return vec![fallback(theme)];
+    }
 
-    let scaled = logo::scale(&artwork(), factor);
-    let mut lines = logo::lines(&scaled, theme.colored);
+    // The wordmark is placed in the middle, the extrusion sits one column to
+    // the right of the front face.
+    let offset = " ".repeat(padding(width));
+    let front = format!("{offset}{WORDMARK}");
+    let depth = format!("{offset} {WORDMARK}");
+    let subtitle = centered(&subtitle(supports_unicode()), width);
 
-    lines.push(Line::from(Span::styled(
-        subtitle(supports_unicode()),
-        theme.dim(),
-    )));
-
-    lines
+    vec![
+        Line::from(Span::styled(depth, theme.wordmark_depth())),
+        Line::from(Span::styled(front, theme.wordmark())),
+        Line::from(Span::styled(subtitle, theme.dim())),
+    ]
 }
 
-/// The lines that are shown when the logo does not fit.
-fn fallback_lines(theme: &Theme) -> Vec<Line<'static>> {
-    vec![
-        Line::from(Span::styled(FALLBACK.to_string(), theme.title())),
-        Line::from(Span::styled(subtitle(supports_unicode()), theme.dim())),
-    ]
+/// The wordmark without the depth, for a terminal that is too small for it.
+pub fn fallback(theme: &Theme) -> Line<'static> {
+    Line::from(Span::styled(WORDMARK.to_string(), theme.wordmark()))
+}
+
+/// The number of spaces that put the wordmark in the middle of the width.
+fn padding(width: u16) -> usize {
+    let word = WORDMARK.chars().count() as u16;
+    if word >= width {
+        return 0;
+    }
+
+    usize::from((width - word) / 2)
+}
+
+/// Puts the text in the middle of the given width.
+fn centered(text: &str, width: u16) -> String {
+    let text_width = text.chars().count() as u16;
+    if text_width >= width {
+        return text.to_string();
+    }
+
+    let padding = (width - text_width) / 2;
+    format!("{}{text}", " ".repeat(padding as usize))
 }
 
 /// The subtitle, in unicode when the terminal can show it.
@@ -107,65 +111,81 @@ pub fn supports_unicode() -> bool {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_the_sharpest_variant_fits_into_a_wide_terminal() {
-        assert_eq!(scale_factor(120), Some(2));
-        assert_eq!(scale_factor(111), Some(2));
+    /// The text of a line.
+    fn text(line: &Line<'_>) -> String {
+        line.spans
+            .iter()
+            .map(|span| span.content.as_ref())
+            .collect()
     }
 
     #[test]
-    fn test_a_narrow_terminal_gets_a_smaller_variant() {
-        assert_eq!(scale_factor(100), Some(3));
-        assert_eq!(scale_factor(74), Some(3));
-        assert_eq!(scale_factor(60), Some(4));
-        assert_eq!(scale_factor(56), Some(4));
-    }
-
-    #[test]
-    fn test_a_terminal_that_is_too_narrow_gets_no_variant() {
-        assert_eq!(scale_factor(55), None);
-        assert_eq!(scale_factor(20), None);
-    }
-
-    #[test]
-    fn test_the_height_grows_with_the_variant() {
-        assert_eq!(height(120), 7, "six rows of logo and the subtitle");
-        assert_eq!(height(100), 5, "four rows of logo and the subtitle");
-        assert_eq!(height(60), 4, "three rows of logo and the subtitle");
-        assert_eq!(height(40), 2, "the fallback and the subtitle");
-    }
-
-    #[test]
-    fn test_the_banner_holds_the_logo_and_the_subtitle() {
+    fn test_the_wordmark_spells_the_name() {
         let theme = Theme::plain();
         let lines = lines(120, &theme);
 
-        assert_eq!(lines.len(), 7);
-        assert!(lines[6].spans[0].content.contains("TOKEN ANALYSIS"));
+        assert_eq!(text(&lines[1]).trim(), "TokenMaxxing");
+        assert_eq!(text(&lines[0]).trim(), "TokenMaxxing");
+    }
+
+    #[test]
+    fn test_the_banner_uses_three_rows() {
+        let theme = Theme::plain();
+
+        assert_eq!(lines(120, &theme).len(), 3);
+        assert_eq!(lines(80, &theme).len(), 3);
+        assert_eq!(height(120), 3);
+        assert_eq!(height(80), 3);
+    }
+
+    #[test]
+    fn test_the_extrusion_is_offset_by_one_column() {
+        let theme = Theme::plain();
+        let lines = lines(120, &theme);
+
+        let front = text(&lines[1]);
+        let depth = text(&lines[0]);
+
+        assert_eq!(front.trim_start(), WORDMARK);
+        assert_eq!(depth.trim_start(), WORDMARK);
+        assert_eq!(
+            depth.find(WORDMARK),
+            front.find(WORDMARK).map(|column| column + 1),
+            "the extrusion sits one column to the right"
+        );
+    }
+
+    #[test]
+    fn test_the_wordmark_is_centered() {
+        let theme = Theme::plain();
+        let lines = lines(120, &theme);
+        let front = text(&lines[1]);
+        let padding = front.len() - front.trim_start().len();
+
+        // The word is in the middle, the room on the left and on the right is
+        // the same.
+        let word = "TokenMaxxing".len();
+        assert_eq!(padding, (120 - word) / 2);
     }
 
     #[test]
     fn test_a_narrow_terminal_gets_the_fallback() {
         let theme = Theme::plain();
-        let lines = lines(40, &theme);
+        let lines = lines(20, &theme);
 
-        assert_eq!(lines.len(), 2);
-        assert_eq!(lines[0].spans[0].content, FALLBACK);
+        assert_eq!(lines.len(), 1);
+        assert_eq!(text(&lines[0]).trim(), "TokenMaxxing");
+        assert_eq!(height(20), 1);
     }
 
     #[test]
-    fn test_the_logo_keeps_its_characters_without_colours() {
+    fn test_the_fallback_never_clips_the_word() {
         let theme = Theme::plain();
-        let lines = lines(120, &theme);
 
-        let text: String = lines
-            .iter()
-            .flat_map(|line| line.spans.iter())
-            .map(|span| span.content.as_ref())
-            .collect();
-
-        assert!(text.contains('█'), "the logo keeps its block characters");
-        assert!(text.contains('▄') || text.contains('▀'));
+        for width in [1u16, 5, 12, 20, 23] {
+            let lines = lines(width, &theme);
+            assert_eq!(text(&lines[0]).trim(), "TokenMaxxing", "width {width}");
+        }
     }
 
     #[test]
@@ -173,5 +193,13 @@ mod tests {
         assert!(subtitle(true).contains('·'));
         assert!(!subtitle(false).contains('·'));
         assert!(subtitle(false).contains("TOKEN ANALYSIS"));
+    }
+
+    #[test]
+    fn test_the_banner_holds_the_subtitle() {
+        let theme = Theme::plain();
+        let lines = lines(120, &theme);
+
+        assert!(text(&lines[2]).contains("TOKEN ANALYSIS"));
     }
 }

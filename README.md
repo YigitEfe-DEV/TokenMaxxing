@@ -154,18 +154,15 @@ The dashboard is a terminal application. It draws six panels and never writes
 to a file without an explicit confirmation.
 
 ```
-▄▄▄▄▄▄▄▄▄▄ ▀▄▄▄▄▄▄▀ ▄▄▄▄ ▄▄▄▄ ▀▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▀ ▄▄▄▄▀▄▀▄▄▀▄ ▀▄▄▄▄▄▄▀ ▄▄▄▄ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▀ ▄▀▄▄▄▄▄▄▄
-░       ░▒▐▌  ▀▀  ░▌▓  ░ ░  ░▐▌     ░▒▓       ░▌▓    ▌    ░▐▌      ░▌▓  ░ ░  ░▓   ░░  ░░▓  ░▓       ░▌▌      ░▒
-▄▄▄▄   ▄▄▄░   █░▄  █░  █▄█ ▄▀░   ▄▄▄▄▄░   █▀  ┼█░  ██┼▀▄ ┼█░   █▄  ┼█▀▄ █▄█ ▄▀▐▀  ██  ▀▌░  █░   █▀  ┼█░  ▄▄▄▄▄▄
-░░·┼┼ ┼█··█┼┼┼█ ░ ┼░┼  ┼▀┼ ▀▄█┼┼ ▄▄▄▄▄█┼ ┼█▒┼ ┼█┼ ┼┼▀▀▀█ ┼┼█┼ ┼▀▀┼┼┼█▄▀ ┼▀┼ ▀▄ ▀█┼▀▀┼▒▀ ┼  ██┼ ┼█▒┼ ┼█┼┼ █▄▄┼┼░
-░▒░┼┼┼┼░░░▐┼┼┼█▄┼┼┼▌┼┼┼┼ ┼┼┼▒▐┼┼┼┼┼┼┼┼█┼┼┼░░┼┼┼░┼┼┼┼   ┼┼┼┼█┼┼┼░█┼┼┼░▌┼┼┼ ┼┼┼▒▐┼┼┼░█┼┼┼▒┼┼┼┼█┼┼┼░░┼┼┼░▌┼┼┼┼┼┼┼│
-·░·▀▀▀▀▀░· ▀▀▀▀▀▀▀▀ ▀▀▀▀ ▀▀▀▀·▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-TOKEN ANALYSIS · COST OPTIMIZATION · BETTER CONTEXT
+                TokenMaxxing      <- the extrusion, one column to the right
+               TokenMaxxing       <- the front face, bright white
+     TOKEN ANALYSIS · COST OPTIMIZATION · BETTER CONTEXT
 ```
 
-The banner is the hand drawn logo of the project. It is stored in
-`tokenmaxxing-cli/assets/tokenmaxxing_logo.txt` in the form it was written
-down, and the dashboard scales it down to the size of the terminal.
+The banner is a minimal wordmark: the name of the project in a crisp front
+face with a restrained red extrusion behind it. It takes two rows, the
+subtitle below it makes three, so the panels keep their room. A terminal
+that is too narrow for the wordmark gets the plain text `TokenMaxxing`.
 
 ### Keyboard shortcuts
 
@@ -232,10 +229,9 @@ Such a build prints a short message instead of starting the dashboard.
 - The dashboard needs a real terminal. Without one it refuses to start and
   points at the commands that work in a script.
 - A terminal below 64 columns, or one that is too short for the banner and
-  the panels, shows a message instead of the panels.
-- The logo is scaled down in whole steps: the sharpest variant is 111 columns
-  wide, the next one 74 and the smallest one 56. Below 56 columns the logo is
-  replaced by the text `TokenMaxxing`.
+  the panels, shows the wordmark and a message instead of the panels.
+- The wordmark needs 14 columns. Below 24 columns the banner falls back to
+  the plain text `TokenMaxxing`.
 - The scan reads the whole directory. On a very large repository the first
   scan takes a moment; the display stays responsive while it runs.
 - The usage history is empty unless a provider integration writes to it. The

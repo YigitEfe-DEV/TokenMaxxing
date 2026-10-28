@@ -8,6 +8,10 @@ pub mod banner;
 pub mod dashboard;
 pub mod diff;
 pub mod events;
+// The hand drawn artwork is not rendered any more, the banner shows the
+// minimal wordmark. It stays in the tree with its parser and its tests, so
+// the original file is not lost and the banner can be brought back.
+#[allow(dead_code)]
 pub mod logo;
 pub mod render;
 pub mod theme;

@@ -8,13 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- The dashboard shows the hand drawn logo of the project. The artwork is stored
-  the way it was written down, in `tokenmaxxing-cli/assets/tokenmaxxing_logo.txt`,
-  and is parsed, scaled down and turned into ratatui spans at startup.
-- The logo comes in three sizes (111, 74 and 56 columns), the sharpest one
-  that fits into the terminal is used, and a terminal that is too narrow for
-  the smallest one gets the text `TokenMaxxing` instead.
-- Interactive terminal dashboard (`tokenmaxxing ui`) built with `ratatui` and `crossterm`: an ASCII banner, repository analytics, cost estimates, a model comparison, optimization suggestions and provider usage.
+- The dashboard shows a minimal wordmark: `TokenMaxxing` in a bold white front
+  face with a restrained red extrusion one column behind it. The banner uses
+  three rows, so the panels keep the room they had before the artwork.
+- A terminal that is too narrow for the wordmark gets the plain text
+  `TokenMaxxing`, and the message of the too small screen shows it as well.
+- The hand drawn artwork is kept in the tree with its parser and its tests, so
+  the original file is not lost and the banner can be brought back.
+- Interactive terminal dashboard (`tokenmaxxing ui`) built with `ratatui` and `crossterm`: a wordmark banner, repository analytics, cost estimates, a model comparison, optimization suggestions and provider usage.
 - Six dashboard panels with a keyboard interface, a search field, sortable file lists, a help screen and a diff preview for proposed changes.
 - `analysis` module in the core crate that counts the files of a tree individually, so the dashboard does not have to implement its own scanning.
 - `usage` module in the core crate with a provider neutral usage record, a file store for the history and an empty store that reports "no usage" instead of inventing numbers.

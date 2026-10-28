@@ -60,6 +60,8 @@ fn draw_too_small(frame: &mut Frame, area: Rect, theme: Theme, banner_height: u1
     let needed_height = banner_height + MIN_PANEL_HEIGHT + 1;
 
     let lines = vec![
+        banner::fallback(&theme),
+        Line::from(""),
         Line::from(Span::styled(
             "Terminal too small",
             theme.warning().add_modifier(ratatui::style::Modifier::BOLD),
