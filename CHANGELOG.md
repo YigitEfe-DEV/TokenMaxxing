@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- The dashboard shows the hand drawn logo of the project. The artwork is stored
+  the way it was written down, in `tokenmaxxing-cli/assets/tokenmaxxing_logo.txt`,
+  and is parsed, scaled down and turned into ratatui spans at startup.
+- The logo comes in three sizes (111, 74 and 56 columns), the sharpest one
+  that fits into the terminal is used, and a terminal that is too narrow for
+  the smallest one gets the text `TokenMaxxing` instead.
 - Interactive terminal dashboard (`tokenmaxxing ui`) built with `ratatui` and `crossterm`: an ASCII banner, repository analytics, cost estimates, a model comparison, optimization suggestions and provider usage.
 - Six dashboard panels with a keyboard interface, a search field, sortable file lists, a help screen and a diff preview for proposed changes.
 - `analysis` module in the core crate that counts the files of a tree individually, so the dashboard does not have to implement its own scanning.
@@ -36,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - An exact count request is never silently downgraded to an estimate: asking for a local Claude count or an OpenAI API count fails with an explanation of what is available instead.
+- The repository analysis no longer panics on a file whose head is cut in the middle of a multi byte character. The head is taken by characters now.
 - The dashboard resolves the paths of a proposed change against the scanned root, so a change no longer lands in the working directory of the process.
 
 ## [0.5.0-beta] - 2026-06-20

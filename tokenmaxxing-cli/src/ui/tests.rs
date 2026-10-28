@@ -281,6 +281,23 @@ fn test_the_keyboard_moves_the_selection() {
 }
 
 #[test]
+fn test_a_narrow_terminal_still_shows_the_logo() {
+    let directory = fixture("narrow-logo");
+    let mut app = app(directory.clone());
+    app.snapshot = Some(dashboard::scan(&directory, &ScanOptions::default()));
+
+    let text = draw(&app, 64, 26);
+
+    assert!(
+        text.contains('█') || text.contains('▄'),
+        "the logo is shown"
+    );
+    assert!(text.contains("TOKEN ANALYSIS"), "the subtitle is shown");
+
+    std::fs::remove_dir_all(&directory).ok();
+}
+
+#[test]
 fn test_a_narrow_terminal_shows_a_message() {
     let app = app(PathBuf::from("/tmp"));
 
@@ -298,10 +315,13 @@ fn test_a_wide_terminal_shows_the_dashboard() {
 
     let text = draw(&app, 120, 40);
 
-    assert!(text.contains("TOKENMAXXING") || text.contains("Overview"));
     assert!(text.contains("Overview"));
     assert!(text.contains("Largest files"));
     assert!(text.contains("Model comparison"));
+
+    // The banner holds the logo of the project.
+    assert!(text.contains('█') || text.contains('▄'));
+    assert!(text.contains("TOKEN ANALYSIS"));
 
     std::fs::remove_dir_all(&directory).ok();
 }
