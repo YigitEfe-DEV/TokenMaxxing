@@ -104,15 +104,10 @@ impl SmartRepositoryMode {
 
                 // Check duplicate files
                 if let Ok(content) = fs::read_to_string(&path_buf) {
-                    let hash = format!(
-                        "{}:{}",
-                        content.len(),
-                        if content.len() > 100 {
-                            &content[..100]
-                        } else {
-                            &content
-                        }
-                    );
+                    // The head is taken by characters, a byte index would cut
+                    // a multi byte character in half and panic.
+                    let head: String = content.chars().take(100).collect();
+                    let hash = format!("{}:{}", content.len(), head);
                     if let Some(existing) = file_contents.insert(hash, path_buf.clone()) {
                         duplicates.push((existing.clone(), path_buf.clone()));
                         total_waste_bytes += size;
@@ -217,5 +212,20 @@ mod tests {
         let smart = SmartRepositoryMode::new();
         let memory = smart.generate_memory(Path::new("."));
         assert!(!memory.architecture_summary.is_empty());
+    }
+
+    #[test]
+    fn test_a_file_with_multibyte_characters_does_not_panic() {
+        let directory = std::env::temp_dir().join("tokenmaxxing-repository-multibyte");
+        std::fs::create_dir_all(&directory).unwrap();
+        // The head of the file is cut in the middle of a multi byte character.
+        std::fs::write(directory.join("logo.txt"), "▄".repeat(60)).unwrap();
+
+        let smart = SmartRepositoryMode::new();
+        let report = smart.analyze_waste(&directory);
+
+        assert!(report.efficiency_score <= 100.0);
+
+        std::fs::remove_dir_all(&directory).ok();
     }
 }
