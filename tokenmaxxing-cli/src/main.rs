@@ -18,6 +18,9 @@ use tokenmaxxing_core::simulator::ContextSimulator;
 use tokenmaxxing_core::tokenizer::openai::{self, OpenAiTokenizer};
 use tokenmaxxing_core::tokenizer::{LocalTokenizer, TokenCountProvider, TokenizerInfo};
 
+#[cfg(feature = "tui")]
+mod ui;
+
 /// Model that is used when the caller does not name an OpenAI model.
 const DEFAULT_OPENAI_MODEL: &str = "gpt-4o";
 
@@ -131,6 +134,33 @@ enum Commands {
     },
     /// List the tokenizers and models that can be counted exactly
     Tokenizers,
+    /// Open the interactive dashboard
+    Ui {
+        /// The directory to analyze
+        #[arg(default_value = ".")]
+        path: PathBuf,
+        /// Model the costs refer to
+        #[arg(long)]
+        model: Option<String>,
+        /// Provider the model belongs to
+        #[arg(short, long, value_enum)]
+        provider: Option<ProviderArg>,
+        /// Pricing profile with dated model rates
+        #[arg(long)]
+        pricing: Option<PathBuf>,
+        /// Where the usage history is kept
+        #[arg(long)]
+        usage: Option<PathBuf>,
+    },
+}
+
+impl From<ProviderArg> for tokenmaxxing_core::provider::ProviderKind {
+    fn from(argument: ProviderArg) -> Self {
+        match argument {
+            ProviderArg::OpenAi => tokenmaxxing_core::provider::ProviderKind::OpenAi,
+            ProviderArg::Anthropic => tokenmaxxing_core::provider::ProviderKind::Anthropic,
+        }
+    }
 }
 
 /// A counting method with the information needed to label its result.
@@ -672,6 +702,52 @@ fn main() {
             println!();
             for note in &report.notes {
                 println!("Note: {}", note);
+            }
+        }
+        Commands::Ui {
+            path,
+            model,
+            provider,
+            pricing,
+            usage,
+        } => {
+            #[cfg(feature = "tui")]
+            {
+                let provider = provider.unwrap_or(ProviderArg::OpenAi);
+                let model = model
+                    .clone()
+                    .unwrap_or_else(|| default_model(provider).to_string());
+
+                let profile = match pricing {
+                    Some(pricing) => match PricingProfile::load_from_path(pricing) {
+                        Ok(profile) => Some(profile),
+                        Err(error) => {
+                            eprintln!("Error: {}", error);
+                            return;
+                        }
+                    },
+                    None => None,
+                };
+
+                let options = ui::UiOptions {
+                    root: path.clone(),
+                    model: Some(model),
+                    pricing: profile,
+                    provider: provider.into(),
+                    usage_path: usage.clone(),
+                };
+
+                if let Err(error) = ui::launch(options) {
+                    eprintln!("Error: {}", error);
+                }
+            }
+            #[cfg(not(feature = "tui"))]
+            {
+                let _ = (path, model, provider, pricing, usage);
+                eprintln!(
+                    "Error: this build has no dashboard. \
+                     Rebuild with `cargo build --features tui`."
+                );
             }
         }
         Commands::Tokenizers => {
